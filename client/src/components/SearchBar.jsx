@@ -19,7 +19,7 @@ margin-right: auto;
 `;
 
 
-const SearchBar = () => {
+const SearchBar = ({search,setSearch}) => {
   return (
     <SearchBarContainer>
         <SearchOutlined/>
@@ -32,7 +32,10 @@ const SearchBar = () => {
             color: 'inherit',
             fontSize:'16px',
             background: "transparent",
-        }}/>
+        }}
+        value={search}
+        onChange={(e)=>setSearch(e.target.value)}
+        />
     </SearchBarContainer>
     
   )

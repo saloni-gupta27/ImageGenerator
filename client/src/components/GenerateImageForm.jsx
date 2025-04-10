@@ -1,8 +1,10 @@
-import React from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components';
 import TextInput from './TextInput';
 import Button from './button';
 import { AutoAwesome, CreateRounded } from '@mui/icons-material';
+import { CreatePost, GenerateImage } from '../api';
+import { useNavigate } from 'react-router-dom';
 
 const Form= styled.div`
 flex:1;
@@ -52,12 +54,34 @@ padding-top:12px
 
 
 const GenerateImageForm = ({post,setPost,createPostLoading,setCreatePostLoading, generateImageLoading, setGenerateImageLoading  }) => {
+ const [error,setError]=useState("")
+ const navigate= useNavigate();
+ const generateImageFunc = async()=>{
+   try{
+      setGenerateImageLoading(true);
+      const res=  await GenerateImage({prompt:post.prompt})
+      setPost({...post, photo:`${res?.data?.photo}`})
+      setGenerateImageLoading(false)
+   }
+   catch(error){
+      setError(error?.response?.data?.message)
+      setGenerateImageLoading(false)
+   }
 
- const generateImageFunc =()=>{
-    setGenerateImageLoading(true);
  }
- const createPostFunc=()=>{
-    setCreatePostLoading(true);
+
+ const createPostFunc=async()=>{
+   try{
+      setCreatePostLoading(true);
+      await CreatePost(post)
+      setCreatePostLoading(false)
+      navigate('/');
+   }
+   catch(error){
+      setError(error?.response?.data?.message)
+      setCreatePostLoading(false)
+   }
+    
  }
 
   return (
@@ -70,7 +94,7 @@ const GenerateImageForm = ({post,setPost,createPostLoading,setCreatePostLoading,
        <TextInput label="Author" placeholder="Enter your name..." name="name" value={post.author} handelChange={(e)=>setPost({...post,author:e.target.value})}/>
        <TextInput label="Image Prompt" placeholder="Write a detailed prompt about the image..."
        name="name" rows="8" textArea value={post.prompt} handelChange={(e)=>setPost({...post,prompt:e.target.value})}/>
-
+      {error && <div style={{color:'red'}}>{error}</div>}
        **You can post the AI Generated image to the Community**
     </Body>
     <Actions>

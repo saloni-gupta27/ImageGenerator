@@ -1,8 +1,10 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import SearchBar from '../components/SearchBar';
 import ImageCard from '../components/ImageCard';
 import { imageurl } from '../base64';
+import { GetPost } from '../api';
+import { CircularProgress } from '@mui/material';
 
 const Container = styled.div`
 height:100%;
@@ -59,24 +61,76 @@ gap:20px;
 `;
 
 const Home = () => {
-    const item = {
-     //   photo:"https://gratisography.com/wp-content/uploads/2024/11/gratisography-augmented-reality-800x525.jpg",
-        photo:imageurl,
-        author:"Bugger",
-        prompt:"Bug up"
-    }
+    const[posts,setPosts] = useState([]);
+    const [loading,setLoading] = useState(false);
+    const [error,setError] =useState("");
+    const [filteredPosts,setFilteredPosts] = useState([]);
+    const [search,setSearch] = useState("");
+
+    const getPostFunc=()=>{
+        setLoading(true);
+        GetPost()
+           .then((res)=>{
+                setPosts(res?.data?.data);
+                setFilteredPosts(res?.data?.data)
+                setLoading(false)
+            })
+          .catch((error)=>{
+                setError(error?.response?.data?.message)
+                setLoading(false)
+             })
+      }
+
+      useEffect(()=>{
+        getPostFunc();
+      },[])
+
+    //Search
+    useEffect(()=>{
+        const searchFilteredPost = posts.filter((post)=>{
+            const promptMatched = post?.prompt?.toLowerCase().includes(search.toLowerCase());
+            const authorMatched = post?.author?.toLowerCase().includes(search.toLowerCase());
+             return promptMatched || authorMatched
+        })
+        if(!search){
+            setFilteredPosts(posts);
+        }
+        else{
+            setFilteredPosts(searchFilteredPost);
+        }
+
+    },[posts,search])
+
   return (
     <Container>
         <Headline>
             Explore Popular posts in the Community!
             <Span>⦿ Generated with AI ⦿</Span>
         </Headline>
-        <SearchBar/>
+        <SearchBar search={search} setSearch={setSearch}/>
         <Wrapper> 
-            <CardWrapper>
-                <ImageCard item={item}/>
-               
-            </CardWrapper>
+            {error && <div style={{color:"red"}}>{error}</div>}
+            {loading ? (
+                <CircularProgress/>
+            ) : (
+                <CardWrapper>
+                {filteredPosts.length===0 ? (
+                    <> No Posts Found </>
+                ): (
+                <>
+                 {filteredPosts.slice().reverse().map((post,index)=>(
+                    <ImageCard  key={index} item={post}/>
+                 ))}
+                 </>
+                 ) 
+                }             
+                </CardWrapper>
+            )
+            }
+        
+           
+
+            
         </Wrapper>
     </Container>
   )

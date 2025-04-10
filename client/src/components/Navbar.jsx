@@ -23,7 +23,6 @@ const Container = styled.div`
 const Navbar = () => {
   const navigate = useNavigate();
   const loc = useLocation();
-  console.log(loc);
   const path = loc.pathname.split("/");
   return (
     <Container>

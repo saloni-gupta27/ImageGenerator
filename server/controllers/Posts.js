@@ -8,7 +8,8 @@ dotenv.config();
  cloudinary.config({ 
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
     api_key: process.env.CLOUDINARY_API_KEY, 
-    api_secret: process.env.CLOUDINARY_API_SECRET
+    api_secret: process.env.CLOUDINAY_API_SECRET,
+    
 });
 
 //Get all posts
@@ -23,14 +24,13 @@ export const getAllPosts = async(req,res,next) =>{
 
 //create Post
 export const createPost = async(req,res,next) =>{
-    console.log("object")
     try{
         const {author,prompt,photo} =req.body;
-        console.log(author, prompt);
-        const photoUrl=await cloudinary.uploader.upload(photo);
+        const photoUrl= await cloudinary.uploader.upload(photo);
         const newPost = await Post.create({author,prompt,photo:photoUrl?.secure_url
         });
         await newPost.save();
+        // console.log(newPost)
         return res.status(201).json({success:true,data:newPost});
     }catch(error){
         next(createError(error.status, error?.response?.data?.error?.message || error?.message)
